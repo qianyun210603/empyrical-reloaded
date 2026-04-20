@@ -21,6 +21,17 @@ DECIMAL_PLACES = 8
 rand = np.random.RandomState(1337)
 
 
+def _linregress_small_sample_warns():
+    small_sample_warning = getattr(stats, "SmallSampleWarning", RuntimeWarning)
+    return pytest.warns(
+        (small_sample_warning, RuntimeWarning),
+        match=(
+            r"invalid value encountered in (?:scalar divide|sqrt)|"
+            r"One or more sample arguments is too small; all returned values will be NaN"
+        ),
+    )
+
+
 class BaseTestClass:
     def assert_indexes_match(self, result, expected):
         """
@@ -809,10 +820,7 @@ class TestStats(BaseTestClass):
             masked_returns_data = returns_arr[mask]
 
             if len(masked_benchmark_data) < 2:
-                with pytest.warns(
-                    RuntimeWarning,
-                    match="invalid value encountered in (?:scalar divide|sqrt)",
-                ):
+                with _linregress_small_sample_warns():
                     slope, intercept, _, _, _ = stats.linregress(
                         masked_benchmark_data, masked_returns_data
                     )
@@ -984,10 +992,7 @@ class TestStats(BaseTestClass):
             masked_returns_data = returns_arr[mask]
 
             if len(masked_benchmark_data) < 2:
-                with pytest.warns(
-                    RuntimeWarning,
-                    match="invalid value encountered in (?:scalar divide|sqrt)",
-                ):
+                with _linregress_small_sample_warns():
                     slope, intercept, _, _, _ = stats.linregress(
                         masked_benchmark_data, masked_returns_data
                     )
@@ -1035,10 +1040,7 @@ class TestStats(BaseTestClass):
             masked_benchmark_data_for_y = benchmark_arr[mask]
 
             if len(masked_returns_data_for_x) < 2:
-                with pytest.warns(
-                    RuntimeWarning,
-                    match="invalid value encountered in (?:scalar divide|sqrt)",
-                ):
+                with _linregress_small_sample_warns():
                     slope, intercept, _, _, _ = stats.linregress(
                         masked_returns_data_for_x, masked_benchmark_data_for_y
                     )
